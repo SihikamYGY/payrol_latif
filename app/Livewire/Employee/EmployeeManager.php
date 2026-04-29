@@ -25,11 +25,6 @@ class EmployeeManager extends Component
         'employeeUpdated' => 'handleEmployeeUpdated',
     ];
 
-    public function render()
-    {
-        return view('livewire.employee.employee-manager');
-    }
-
     public function store()
     {
         $this->validate([
@@ -55,17 +50,43 @@ class EmployeeManager extends Component
             ]
         );
 
-        Employee::create([
-            'name' => $this->name,
-            'nik' => $this->nik,
-            'phone' => $this->phone,
-            'position' => $this->position,
-        ]); 
+        session()->flash('success', $this->isEditMode ? 'Data karyawan berhasil diperbarui.' : 'Data karyawan berhasil dibuat.');
 
         // Reset form
         $this->resetForm();
-
         // Emit event untuk memberi tahu komponen lain bahwa data telah dibuat
         $this->emit('employeeCreated');
+    }
+
+    // 2. Siapkan form Edit
+    public function edit(int $id)
+    {
+        $emp = Employee::findOrFail($id);
+        $this->employee_id = $emp->id;
+        $this->nik = $emp->nik;
+        $this->name = $emp->name;
+        $this->position = $emp->position;
+        $this->isEditMode = true;
+    }
+
+    // 3. DELETE
+    public function delete(int $id)
+    {
+        Employee::findOrFail($id)->delete();
+        session()->flash('success', 'Karyawan berhasil dihapus.');
+    }
+
+    public function resetForm()
+    {
+        $this->reset(['employee_id', 'nik', 'name', 'position', 'isEditMode']);
+        $this->resetValidation();
+    }
+
+    // 4. READ
+    public function render()
+    {
+        return view('livewire.employee-manager', [
+            'employees' => Employee::orderBy('id', 'desc')->get(),
+        ])->layout('layouts.app');
     }
 }
