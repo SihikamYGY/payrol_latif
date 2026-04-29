@@ -12,4 +12,10 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::view('employee', 'employee.index')->name('employee.index');
+});
+
+
+
 require __DIR__.'/auth.php';
